@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFCCBC">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lista de Profesores"
+        android:textSize="22sp"
+        android:gravity="center"
+        android:background="#FF5722"
+        android:padding="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seleccione un profesor"
+        android:textSize="18sp"
+        android:gravity="left"
+        android:layout_marginTop="8dp"/>
+
+    <ListView
+        android:id="@+id/listViewProfesores"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="8dp">
+
+        <Button
+            android:id="@+id/buttonBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:text="Atrás"
+            android:textColor="@android:color/white"
+            android:padding="8dp"
+            android:layout_margin="8dp"/>
+
+        <Button
+            android:id="@+id/buttonAddProfesor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:text="Agregar Profesor"
+            android:textColor="@android:color/white"
+            android:padding="8dp"
+            android:layout_margin="8dp"/>
+    </LinearLayout>
+</LinearLayout>
