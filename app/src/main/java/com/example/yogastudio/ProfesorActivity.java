@@ -18,6 +18,8 @@ import com.example.yogastudio.clases.Profesor;
 
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ProfesorActivity extends AppCompatActivity {
 
@@ -25,6 +27,7 @@ public class ProfesorActivity extends AppCompatActivity {
     private final Handler handler = new Handler();
     private Button buttonBack;
     private Button buttonAddProfesor;
+    private ExecutorService executorService;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -36,52 +39,16 @@ public class ProfesorActivity extends AppCompatActivity {
         buttonBack = findViewById(R.id.buttonBack);
         buttonAddProfesor = findViewById(R.id.buttonAddProfesor);
 
-        buttonBack.setOnClickListener(v -> {
-            finish(); // Volver a la actividad anterior
-        });
+        executorService = Executors.newSingleThreadExecutor();
+
+        buttonBack.setOnClickListener(v -> finish()); // Volver a la actividad anterior
 
         buttonAddProfesor.setOnClickListener(v -> {
             Intent intent = new Intent(ProfesorActivity.this, AgregarProfesorActivity.class);
             startActivity(intent);
         });
 
-
-        // Cargar los datos de los profesores en un hilo separado
-        new Thread(() -> {
-            List<Profesor> profesores = Profesor.obtenerTodos(ProfesorActivity.this);
-            handler.post(() -> {
-                // Si tenemos profesores, los mostramos en el ListView
-                if (profesores != null && !profesores.isEmpty()) {
-                    ArrayAdapter<Profesor> adapter = new ArrayAdapter<>(ProfesorActivity.this, android.R.layout.simple_list_item_1, profesores);
-                    listViewProfesores.setAdapter(adapter);
-
-                    listViewProfesores.setOnItemClickListener((parent, view, position, id) -> {
-                        final Profesor profesor = (Profesor) parent.getItemAtPosition(position);
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ProfesorActivity.this);
-                        builder.setTitle("Opciones")
-                                .setItems(new String[]{"Modificar", "Eliminar"}, (dialog, which) -> {
-                                    if (which == 0) {
-                                        // Modificar
-                                        Intent intent = new Intent(ProfesorActivity.this, AgregarProfesorActivity.class);
-                                        intent.putExtra("profesor", profesor);
-                                        startActivity(intent);
-                                    } else if (which == 1) {
-                                        // Eliminar
-                                        Profesor.eliminar(ProfesorActivity.this, profesor.getId());
-                                        Toast.makeText(ProfesorActivity.this, "Profesor eliminado", Toast.LENGTH_SHORT).show();
-                                        // Recargar la lista de profesores
-                                        loadProfesores();
-                                    }
-                                });
-                        builder.create().show();
-                    });
-                } else {
-                    // Si no hay profesores, mostramos un mensaje
-                    Toast.makeText(ProfesorActivity.this, "No hay profesores disponibles", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
+        loadProfesores();
     }
 
     @Override
@@ -91,27 +58,57 @@ public class ProfesorActivity extends AppCompatActivity {
         loadProfesores();
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (executorService != null && !executorService.isShutdown()){
+            executorService.shutdown();
+        }
+    }
+
+
     private void loadProfesores() {
-        // Cargar los datos de los profesores en un hilo separado
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        executorService.submit(() -> {
+            try {
                 List<Profesor> profesores = Profesor.obtenerTodos(ProfesorActivity.this);
-                // Usamos el Handler para actualizar la UI en el hilo principal
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Si tenemos profesores, los mostramos en el ListView
-                        if (profesores != null && !profesores.isEmpty()) {
-                            ArrayAdapter<Profesor> adapter = new ArrayAdapter<>(ProfesorActivity.this, android.R.layout.simple_list_item_1, profesores);
-                            listViewProfesores.setAdapter(adapter);
-                        } else {
-                            // Si no hay profesores, mostramos un mensaje
-                            Toast.makeText(ProfesorActivity.this, "No hay profesores disponibles", Toast.LENGTH_SHORT).show();
-                        }
+                handler.post(() -> {
+                    // Si tenemos profesores, los mostramos en el ListView
+                    if (profesores != null && !profesores.isEmpty()) {
+                        ArrayAdapter<Profesor> adapter = new ArrayAdapter<>(ProfesorActivity.this, android.R.layout.simple_list_item_1, profesores);
+                        listViewProfesores.setAdapter(adapter);
+
+                        listViewProfesores.setOnItemClickListener((parent, view, position, id) -> {
+                            final Profesor profesor = (Profesor) parent.getItemAtPosition(position);
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ProfesorActivity.this);
+                            builder.setTitle("Opciones")
+                                    .setItems(new String[]{"Modificar", "Eliminar"}, (dialog, which) -> {
+                                        if (which == 0) {
+                                            // Modificar
+                                            Intent intent = new Intent(ProfesorActivity.this, AgregarProfesorActivity.class);
+                                            intent.putExtra("profesor", profesor);
+                                            startActivity(intent);
+                                        } else if (which == 1) {
+                                            // Eliminar
+                                            Profesor.eliminar(ProfesorActivity.this, profesor.getId());
+                                            Toast.makeText(ProfesorActivity.this, "Profesor eliminado", Toast.LENGTH_SHORT).show();
+                                            // Recargar la lista de profesores
+                                            loadProfesores();
+                                        }
+                                    });
+                            builder.create().show();
+                        });
+                    } else {
+                        // Si no hay profesores, mostramos un mensaje
+                        Toast.makeText(ProfesorActivity.this, "No hay profesores disponibles", Toast.LENGTH_SHORT).show();
                     }
                 });
+            } catch (Exception e) {
+                handler.post(() -> {
+                    // Manejo del error en la UI
+                    Toast.makeText(ProfesorActivity.this, "Error al cargar los datos de los profesores", Toast.LENGTH_SHORT).show();
+                });
             }
-        }).start();
+        });
     }
 }

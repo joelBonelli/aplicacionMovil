@@ -22,6 +22,8 @@ import com.example.yogastudio.clases.Profesor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CursoActivity extends AppCompatActivity {
 
@@ -29,6 +31,7 @@ public class CursoActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Button buttonBack;
     private Button buttonAddCurso;
+    private ExecutorService executorService;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -40,12 +43,10 @@ public class CursoActivity extends AppCompatActivity {
         buttonBack = findViewById(R.id.buttonBack);
         buttonAddCurso = findViewById(R.id.buttonAddCurso);
 
-        buttonBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Volver a la actividad anterior
-            }
-        });
+        executorService = Executors.newSingleThreadExecutor();
+
+
+        buttonBack.setOnClickListener(v -> finish()); // Volver a la actividad anterior
 
         buttonAddCurso.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,85 +56,114 @@ public class CursoActivity extends AppCompatActivity {
             }
         });
 
-        // Cargar los datos de los profesores en un hilo separado
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<Curso> cursos = Curso.obtenerTodos(CursoActivity.this);
-
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Si tenemos profesores, los mostramos en el ListView
-                        if (cursos != null && !cursos.isEmpty()) {
-                            ArrayAdapter<Curso> adapter = new ArrayAdapter<>(CursoActivity.this, android.R.layout.simple_list_item_1, cursos);
-                            listViewCursos.setAdapter(adapter);
-
-                            listViewCursos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                    final Curso curso = (Curso) parent.getItemAtPosition(position);
-
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(CursoActivity.this);
-                                    builder.setTitle("Opciones")
-                                            .setItems(new String[]{"Modificar", "Eliminar"}, new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    if (which == 0) {
-                                                        // Modificar
-                                                        Intent intent = new Intent(CursoActivity.this, AgregarCursoActivity.class);
-                                                        intent.putExtra("curso", (Serializable) curso);
-                                                        startActivity(intent);
-                                                    } else if (which == 1) {
-                                                        // Eliminar
-                                                        Curso.eliminar(CursoActivity.this, curso.getId());
-                                                        Toast.makeText(CursoActivity.this, "Curso eliminado", Toast.LENGTH_SHORT).show();
-                                                        // Recargar la lista de Cursos
-                                                        loadCursos();
-                                                    }
-                                                }
-                                            });
-                                    builder.create().show();
-                                }
-                            });
-
-                        } else {
-                            // Si no hay cursos, mostramos un mensaje
-                            Toast.makeText(CursoActivity.this, "No hay cursos disponibles", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
-        }).start();
+        loadCursos();
     }
-
     @Override
-    protected void onResume() {
+    protected  void onResume(){
         super.onResume();
-        // Recargar la lista de profesores cuando se regresa a esta actividad
         loadCursos();
     }
 
+
     private void loadCursos() {
-        new Thread(new Runnable() {
+        executorService.submit(new Runnable() {
             @Override
             public void run() {
-                // Simulamos la carga de los datos de la base de datos
-                List<Curso> cursos = Curso.obtenerTodos(CursoActivity.this);
-
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (cursos != null && !cursos.isEmpty()) {
-                            ArrayAdapter<Curso> adapter = new ArrayAdapter<>(CursoActivity.this, android.R.layout.simple_list_item_1, cursos);
-                            listViewCursos.setAdapter(adapter);
-                        } else {
-                            // Si no hay profesores, mostramos un mensaje
-                            Toast.makeText(CursoActivity.this, "No hay cursos disponibles", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                try {
+                    // Cargar los cursos en segundo plano
+                    List<Curso> cursos = obtenerCursos();
+                    // Actualizar la interfaz de usuario con los cursos cargados
+                    actualizarUIConCursos(cursos);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    mostrarErrorCargaCursos();
+                }
             }
-        }).start();
+        });
+    }
+
+    private List<Curso> obtenerCursos() {
+        // Simulamos la carga de los datos de la base de datos
+        return Curso.obtenerTodos(CursoActivity.this);
+    }
+
+    private void actualizarUIConCursos(List<Curso> cursos) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (cursos != null && !cursos.isEmpty()) {
+                    configurarListViewCursos(cursos);
+                } else {
+                    // Si no hay cursos, mostramos un mensaje
+                    Toast.makeText(CursoActivity.this, "No hay cursos disponibles", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void configurarListViewCursos(List<Curso> cursos) {
+        ArrayAdapter<Curso> adapter = new ArrayAdapter<>(CursoActivity.this, android.R.layout.simple_list_item_1, cursos);
+        listViewCursos.setAdapter(adapter);
+
+        listViewCursos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Curso curso = (Curso) parent.getItemAtPosition(position);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(CursoActivity.this);
+                builder.setTitle("Opciones")
+                        .setItems(new String[]{"Modificar", "Eliminar"}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (which == 0) {
+                                    // Modificar
+                                    Intent intent = new Intent(CursoActivity.this, AgregarCursoActivity.class);
+                                    intent.putExtra("curso", (Serializable) curso);
+                                    startActivity(intent);
+                                } else if (which == 1) {
+                                    // Eliminar
+                                    eliminarCurso(curso);
+                                }
+                            }
+                        });
+                builder.create().show();
+            }
+        });
+    }
+
+    private void eliminarCurso(Curso curso) {
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Curso.eliminar(CursoActivity.this, curso.getId());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(CursoActivity.this, "Curso eliminado", Toast.LENGTH_SHORT).show();
+                            // Recargar la lista de cursos
+                            loadCursos();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(CursoActivity.this, "Error al eliminar el curso", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void mostrarErrorCargaCursos() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CursoActivity.this, "Error al cargar los cursos", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

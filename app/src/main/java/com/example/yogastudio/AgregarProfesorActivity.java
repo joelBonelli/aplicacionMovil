@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.yogastudio.clases.Profesor;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class AgregarProfesorActivity extends AppCompatActivity {
 
     private EditText editTextNombre;
@@ -23,6 +26,7 @@ public class AgregarProfesorActivity extends AppCompatActivity {
     private Button buttonAtras;
     private Profesor profesor;
 
+    private ExecutorService executorService;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,8 @@ public class AgregarProfesorActivity extends AppCompatActivity {
         buttonGuardar = findViewById(R.id.buttonGuardar);
         buttonAtras = findViewById(R.id.buttonBack);
 
+        executorService = Executors.newSingleThreadExecutor();
+
         // Verificar si estamos editando un profesor existente
         if (getIntent().hasExtra("profesor")) {
             profesor = (Profesor) getIntent().getSerializableExtra("profesor");
@@ -47,19 +53,9 @@ public class AgregarProfesorActivity extends AppCompatActivity {
             }
         }
 
-        buttonAtras.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish(); // Volver a la actividad anterior
-            }
-        });
+        buttonAtras.setOnClickListener(v -> finish());
 
-        buttonGuardar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                guardarProfesor();
-            }
-        });
+        buttonGuardar.setOnClickListener(v -> guardarProfesor());
     }
 
     private void guardarProfesor() {
@@ -67,17 +63,10 @@ public class AgregarProfesorActivity extends AppCompatActivity {
         String email = editTextEmail.getText().toString().trim();
         String telefono = editTextTelefono.getText().toString().trim();
         String dniStr = editTextDni.getText().toString().trim();
+
         // Validaciones
         if (!validarNombre(nombre)) {
             Toast.makeText(this, "El nombre solo debe contener letras", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!validarEmail(email)) {
-            Toast.makeText(this, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!validarSoloNumeros(telefono)) {
-            Toast.makeText(this, "El teléfono solo debe contener números", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!validarSoloNumeros(dniStr)) {
@@ -86,27 +75,46 @@ public class AgregarProfesorActivity extends AppCompatActivity {
         }
         int dni = Integer.parseInt(dniStr);
 
-        Profesor profesorExistente = Profesor.buscarPorDni(this, dni);
-        if (profesorExistente != null && (profesor == null || profesor.getDni() != dni)) {
-            Toast.makeText(this, "Ya existe un profesor registrado con este DNI", Toast.LENGTH_SHORT).show();
+        if (!validarEmail(email)) {
+            Toast.makeText(this, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!validarSoloNumeros(telefono)) {
+            Toast.makeText(this, "El teléfono solo debe contener números", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (profesor == null) {
-            // Crear un nuevo profesor
-            profesor = new Profesor(nombre, email, telefono, dni);
-            Profesor.insertar(this, profesor);
-            Toast.makeText(this, "Profesor agregado", Toast.LENGTH_SHORT).show();
-        } else {
-            // Actualizar el profesor existente
-            profesor.setNombre(nombre);
-            profesor.setEmail(email);
-            profesor.setTelefono(telefono);
-            profesor.setDni(dni);
-            Profesor.actualizar(this, profesor);
-            Toast.makeText(this, "Profesor actualizado", Toast.LENGTH_SHORT).show();
-        }
-        finish(); // Cierra la actividad actual
+        // Operaciones en segundo plano
+        executorService.submit(() -> {
+            try {
+                Profesor profesorExistente = Profesor.buscarPorDni(this, dni);
+
+                if (profesorExistente != null && (profesor == null || profesor.getDni() != dni)) {
+                    runOnUiThread(() -> Toast.makeText(this, "Ya existe un profesor registrado con este DNI", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                if (profesor == null) {
+                    // Crear un nuevo profesor
+                    profesor = new Profesor(nombre, email, telefono, dni);
+                    Profesor.insertar(this, profesor);
+                    runOnUiThread(() -> Toast.makeText(this, "Profesor agregado", Toast.LENGTH_SHORT).show());
+                } else {
+                    // Actualizar el profesor existente
+                    profesor.setNombre(nombre);
+                    profesor.setEmail(email);
+                    profesor.setTelefono(telefono);
+                    profesor.setDni(dni);
+                    Profesor.actualizar(this, profesor);
+                    runOnUiThread(() -> Toast.makeText(this, "Profesor actualizado", Toast.LENGTH_SHORT).show());
+                }
+
+                runOnUiThread(this::finish);
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(this, "Error al guardar el profesor", Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     private boolean validarNombre(String nombre) {
@@ -123,5 +131,4 @@ public class AgregarProfesorActivity extends AppCompatActivity {
         // Expresión regular para validar solo números
         return texto.matches("^[0-9]+$");
     }
-
 }
