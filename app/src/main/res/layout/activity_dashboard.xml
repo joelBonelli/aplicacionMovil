@@ -38,7 +38,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FF5722"
+            android:background="#7A94A3"
             android:gravity="end"
             android:orientation="horizontal">
 
@@ -58,7 +58,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FF5722"
+            android:background="#7A94A3"
             android:orientation="vertical"
             android:padding="8dp">
 
@@ -68,15 +68,20 @@
                 android:gravity="start"
                 android:paddingStart="16dp"
                 android:paddingTop="8dp"
+                android:layout_marginBottom="8dp"
                 android:text="Administración"
                 android:textColor="@android:color/white"
                 android:textSize="18sp" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/white" />
 
             <ListView
                 android:id="@+id/listViewOptions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="16dp"/>
 
         </LinearLayout>
 

@@ -13,7 +13,9 @@
         android:text="Lista de Profesores"
         android:textSize="22sp"
         android:gravity="center"
-        android:background="#FF5722"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
+        android:background="@drawable/titulo_redondeado"
         android:padding="16dp"/>
 
     <TextView
@@ -42,7 +44,7 @@
             android:id="@+id/buttonBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@android:color/holo_red_light"
+            android:backgroundTint="@color/rojoOscuro"
             android:text="Atrás"
             android:textColor="@android:color/white"
             android:padding="8dp"
@@ -52,7 +54,7 @@
             android:id="@+id/buttonAddProfesor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@android:color/holo_green_light"
+            android:backgroundTint="@color/botonVerde"
             android:text="Agregar Profesor"
             android:textColor="@android:color/white"
             android:padding="8dp"
