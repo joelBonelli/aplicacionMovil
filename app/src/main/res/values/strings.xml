@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">YogaStudio</string>
+    <string name="addProfesor">Agregar Profesor</string>
+    <string name="addCurso">Agregar Curso</string>
+    <string name="atras">Atrás</string>
+    <string name="login">Iniciar Sesión</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="admin">Administración</string>
+    <string name="resumenCursos">Resumen de Cursos</string>
+    <string name="listProfesor">Lista de Profesores</string>
+    <string name="listCursos">Lista de Cursos</string>
+    <string name="save">Guardar</string>
+    <string name="selectItem">Seleccione un Item</string>
 </resources>

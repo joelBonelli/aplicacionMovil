@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lista de Profesores"
+        android:text="@string/listProfesor"
         android:textSize="22sp"
         android:gravity="center"
         android:layout_marginBottom="10dp"
@@ -21,7 +21,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Seleccione un profesor"
+        android:text="@string/selectItem"
         android:textSize="18sp"
         android:gravity="left"
         android:layout_marginTop="8dp"/>
@@ -45,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/rojoOscuro"
-            android:text="Atrás"
+            android:text="@string/atras"
             android:textColor="@android:color/white"
             android:padding="8dp"
             android:layout_margin="8dp"/>
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/botonVerde"
-            android:text="Agregar Profesor"
+            android:text="@string/addProfesor"
             android:textColor="@android:color/white"
             android:padding="8dp"
             android:layout_margin="8dp"/>

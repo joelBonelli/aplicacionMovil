@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lista de Cursos"
+        android:text="@string/listCursos"
         android:textSize="22sp"
         android:gravity="center"
         android:background="@drawable/titulo_redondeado"
@@ -21,7 +21,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Seleccione un curso"
+        android:text="@string/selectItem"
         android:textSize="18sp"
         android:gravity="left"
         android:layout_marginTop="8dp"/>
@@ -45,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/rojoOscuro"
-            android:text="Atrás"
+            android:text="@string/atras"
             android:textColor="@android:color/white"
             android:padding="8dp"
             android:layout_margin="8dp"/>
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/botonVerde"
-            android:text="Agregar Curso"
+            android:text="@string/addCurso"
             android:textColor="@android:color/white"
             android:padding="8dp"
             android:layout_margin="8dp"/>
